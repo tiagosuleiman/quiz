@@ -1,0 +1,154 @@
+<div id="select" ng-hide="showme" class="modal-dialog" style="margin-top: 130px;">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h3 class="modal-title" id="myModalLabel">Avaliação da implantação do sistema e_SUS AB PEC</h3>
+            </div> <!-- /.modal-header -->
+
+            <div class="modal-body">
+               <form name="selectForm" role="form" novalidate>
+                    <div class="form-group">
+                        <label for="fullName">Nome Completo:</label>
+                        <input type="text" class="form-control" placeholder="(Opcional)" name="fullName" ng-model="fullName" only-Letters>
+                    </div> <!-- /.form-group -->
+                    <div class="form-group">
+                        <label for="area">Selecione a Unidade:</label> 
+                            <select name="unitList" id="unitList" class="form-control" ng-model="unit" required>
+                                <option value="UBS GLEBA DO PÊSSEGO - VICENTE FIUZA DA COSTA">UBS GLEBA DO PÊSSEGO - VICENTE FIUZA DA COSTA</option>
+                                <option value="UBS PARQUE REGINA">UBS PARQUE REGINA</option>
+                            </select>
+                            <span ng-show="selectForm.unitList.$touched && selectForm.unitList.$invalid" style="color: red; font-weight: bold;">Selecione a Unidade.</span>
+                    </div> <!-- /.form-group -->
+                    <div class="form-group">
+                        <label for="area">Selecione a função/área de atuação:</label> 
+                            <select name="listQuiz" id="quizList" class="form-control" ng-model="quizName" ng-change="loadQuiz(quizName)" required>
+                                <option value="1">Administrativo</option>
+                                <option value="2">Coordenador</option>
+                                <option value="3">Médicos</option>
+                                <option value="4">Enfermagem</option>
+                                <option value="5">Odontologia</option>
+
+                            </select>
+                        <span ng-show="selectForm.listQuiz.$touched && selectForm.listQuiz.$pristine" style="color: red; font-weight: bold;">Selecione a função/área de atuação.</span>
+                    </div>
+                </form>
+
+            </div> <!-- /.modal-body -->
+
+            <div class="modal-footer">
+                <div class="col-md-5 pull-right">
+                    <button class="form-control btn btn-primary" ng-click="showme=true" ng-disabled="selectForm.unitList.$invalid || selectForm.listQuiz.$pristine">Confirmar</button>
+                </div>    
+            </div> <!-- /.modal-footer -->
+
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+
+<div id="questionario" ng-show="showme">
+<div class="header">
+    <div class="row">
+        <div class="col-md-8">
+            <h3>Avaliação da implantação do sistema e_SUS AB PEC</h3>
+        </div>
+    </div>
+    <hr />
+</div> 
+
+<div id="quiz">
+    <div class="row">
+        <div class="col-md-12"><h1 class="center">{{quiz.Name}}</h1><hr /></div>
+    </div>
+    
+    <div ng-show="mode=='quiz'">
+       <form name="quizQuestions" novalidate> 
+        <div ng-repeat="question in filteredQuestions">
+            <div class="label label-warning pull-right" style="font-size: large;">Questão {{currentPage}} de {{totalItems}}.</div>
+            <div class="row">
+                <div class="col-md-12">
+                    <h2>{{currentPage}}. <span ng-bind-html="question.Name"></span></h2>
+                </div>
+            </div>
+            <div class="row text-left options">
+                <div class="col-md-6" ng-repeat="option in question.Options">
+                     <div class="checkbox checkbox-warning checkbox-circle" ng-if="question.QuestionTypeId == '1'">
+                        <input name="radio" id="{{option.Id}}" type="checkbox" ng-checked="option.Selected" ng-model="option.Selected" ng-change="onSelect(question, option);" required>
+                        <label for="{{option.Id}}">{{option.Name}}</label>
+                    </div>
+                    <div class="checkbox checkbox-warning" ng-if="question.QuestionTypeId == '2'">
+                        <input name="chk" id="{{option.Id}}" type="checkbox" ng-checked="option.Selected" ng-model="option.Selected" value="{{option.Id}}" ng-change="onSelect(question, option);" required>
+                        <label for="{{option.Id}}">{{option.Name}}</label>
+                    
+                        <input class="form-control" type="text" name="others" ng-change="onSelect(question, option);" ng-model="option.description" ng-if="option.Name == 'Outros'" ng-show="option.Selected == true" required> 
+                        <span ng-show="option.Selected == true && option.Name == 'Outros' && quizQuestions.others.$invalid" style="color: red; ">Especifique outras ocorrências identificadas.</span>
+                    </div>
+                    <div ng-if="question.QuestionTypeId == '3'" class="col-md-12">
+                       <textarea name="text" id="{{option.Id}}" ng-model="option.response" 
+                       class="form-control" maxlength="1500"  ng-change="onSelect(question, option);" required></textarea>
+
+                    </div>
+                </div>
+            </div>
+   
+                <div class="alert alert-info" role="alert" ng-show="question.QuestionTypeId == '2'" style="font-size: 18px; text-align: center;">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    É possível selecionar mais de uma opção nesta questão.
+                </div>
+   
+        </div>
+        </form> 
+        <hr />
+        <div class="quizNav">
+            <div>
+                <button class="btn btn-default" ng-show="config.allowBack" ng-click="goTo(1);" ng-disabled="quizQuestions.chk.$valid && quizQuestions.others.$invalid">Primeira</button>
+                <button class="btn btn-default" ng-show="config.allowBack" ng-click="goTo(currentPage - 1);" ng-disabled="quizQuestions.chk.$valid && quizQuestions.others.$invalid">Anterior</button>
+                <button class="btn btn-primary"                            ng-click="goTo(currentPage + 1);" ng-disabled="quizQuestions.chk.$valid && quizQuestions.others.$invalid">Próxima</button>
+                <button class="btn btn-default" ng-show="config.allowBack" ng-click="goTo(totalItems);" ng-disabled="quizQuestions.chk.$valid && quizQuestions.others.$invalid">Última</button>
+            </div>
+            <br />
+            <pagination ng-show="config.showPager" direction-links="false" total-items="totalItems" items-per-page="itemsPerPage" ng-model="currentPage" ng-change="pageChanged()"></pagination>
+        </div>
+    </div>
+    <div class="row review" ng-show="mode=='review'">
+        <div class="col-sm-4" ng-repeat="question in questions">
+            <div ng-click="goTo($index + 1)" class="{{ isAnswered($index) == 'Respondida'? 'answered': 'not-answered' }}">{{$index + 1}}. {{ isAnswered($index) }}</div>
+        </div>
+    </div>
+    <div class="result" ng-show="mode=='result'">
+        <h2>Respostas</h2>
+        <div ng-repeat="question in questions">
+            <div class="result-question">
+                <h4>{{$index + 1}}. {{question.Name}}</h4>
+                <div class="row">
+                    <div class="col-md-6" ng-repeat="Option in question.Options">
+                        <div class="checkbox checkbox-warning checkbox-circle" ng-if="question.QuestionTypeId == '1'">
+                            <input id="{{Option.Id}}" type="checkbox" disabled="disabled" ng-model="Option.Selected" >
+                            <label for="{{option.Id}}">{{Option.Name}}</label>
+                        </div>
+                        <div class="checkbox checkbox-warning" ng-if="question.QuestionTypeId == '2'">
+                            <input id="{{Option.Id}}" type="checkbox" disabled="disabled" ng-model="Option.Selected" >
+                            <label for="{{option.Id}}">{{Option.Name}}</label>
+                            <input class="form-control" type="text" placeholder="Especifique as outras ocorrências" ng-change="onSelect(question, option);" ng-model="Option.description" ng-if="Option.Id == '18'" ng-show="Option.Selected == true" disabled="disabled"> 
+
+                        </div>
+                        <div ng-if="question.QuestionTypeId == '3'" class="col-md-12">
+                           <textarea ng-model="Option.response" 
+                           class="form-control" maxlength="1500" disabled="disabled"></textarea>
+                        </div>
+
+                    </div>
+                </div>   
+            </div>
+        </div>
+        <h4 class="alert alert-info text-center">Você já pode fechar a janela!</h4>
+    </div>
+    <hr />
+    <div class="" ng-show="mode!='result'">
+        <button class="btn btn-default" ng-click="mode = 'quiz'">Questionário</button> 
+        <button class="btn btn-default" ng-click="mode = 'review'" ng-disabled="quizQuestions.chk.$valid && quizQuestions.others.$invalid">Revisão</button> 
+        <button class="btn btn-default" ng-click="onSubmit(Answer);">Enviar Questionário</button>
+    </div>
+</div>
+
+</div><!--DIV Conteúdo Questionário-->
